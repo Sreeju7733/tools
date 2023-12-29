@@ -1,33 +1,41 @@
-const btn = document.querySelector('.talk');
-const content = document.querySelector('.content');
+const btn = document.querySelector('.talk')
+const content = document.querySelector('.content')
 
-function speak(sentence) {
-    const text_speak = new SpeechSynthesisUtterance(sentence);
+
+function speak(text){
+    const text_speak = new SpeechSynthesisUtterance(text);
+
     text_speak.rate = 1;
+    text_speak.volume = 1;
     text_speak.pitch = 1;
+
     window.speechSynthesis.speak(text_speak);
 }
 
-function wishMe() {
+function wishMe(){
     var day = new Date();
-    var hr = day.getHours();
+    var hour = day.getHours();
 
-    if (hr >= 0 && hr < 12) {
-        speak("Good Morning Boss");
-    } else if (hr == 12) {
-        speak("Good noon Boss");
-    } else if (hr > 12 && hr <= 17) {
-        speak("Good Afternoon Boss");
-    } else {
-        speak("Good Evening Boss");
+    if(hour>=0 && hour<12){
+        speak("Good Morning Boss...")
     }
+
+    else if(hour>12 && hour<17){
+        speak("Good Afternoon Master...")
+    }
+
+    else{
+        speak("Good Evenining Sir...")
+    }
+
 }
 
-window.addEventListener('load', () => {
-    speak("Activating Jarvis");
-    speak("Going online");
+window.addEventListener('load', ()=>{
+    speak("Initializing JARVIS..");
     wishMe();
 });
+
+
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const recognition = new SpeechRecognition();
@@ -40,6 +48,7 @@ recognition.onresult = async (event) => {
 };
 
 btn.addEventListener('click', () => {
+	content.textContent = "Listening...."
     recognition.start();
 });
 
