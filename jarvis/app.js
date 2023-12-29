@@ -1,41 +1,59 @@
-const btn = document.querySelector('.talk')
-const content = document.querySelector('.content')
+const btn = document.querySelector('.talk');
+const content = document.querySelector('.content');
 
+let voices = [];
 
-function speak(text){
-    const text_speak = new SpeechSynthesisUtterance(text);
+function speak(text) {
+    const speech = new SpeechSynthesisUtterance(text);
 
-    text_speak.rate = 1;
-    text_speak.volume = 1;
-    text_speak.pitch = 1;
+    // Set the voice when speaking
+    speech.voice = getMaleVoice();
+    speech.rate = 1;
+    speech.volume = 1;
+    speech.pitch = 1;
 
-    window.speechSynthesis.speak(text_speak);
+    window.speechSynthesis.speak(speech);
 }
 
-function wishMe(){
-    var day = new Date();
-    var hour = day.getHours();
+// Function to get a male voice
+function getMaleVoice() {
+    const maleVoiceWindows = voices.find(voice => voice.name === 'Microsoft David Desktop');
+    const maleVoiceAndroid = voices.find(voice => voice.name === 'Google UK English Male');
 
-    if(hour>=0 && hour<12){
-        speak("Good Morning Boss...")
-    }
-
-    else if(hour>12 && hour<17){
-        speak("Good Afternoon Master...")
-    }
-
-    else{
-        speak("Good Evenining Sir...")
-    }
-
+    return maleVoiceWindows || maleVoiceAndroid || voices[0];
 }
 
-window.addEventListener('load', ()=>{
+function wishMe() {
+    const hour = new Date().getHours();
+
+    if (hour >= 0 && hour < 12) {
+        speak("Good Morning Boss...");
+    } else if (hour >= 12 && hour < 17) {
+        speak("Good Afternoon Master...");
+    } else {
+        speak("Good Evening Sir...");
+    }
+}
+
+window.addEventListener('load', () => {
     speak("Initializing JARVIS..");
     wishMe();
 });
 
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = new SpeechRecognition();
 
+recognition.onresult = async (event) => {
+    const current = event.resultIndex;
+    const transcript = event.results[current][0].transcript;
+    content.textContent = transcript;
+    await processCommand(transcript.toLowerCase());
+};
+
+btn.addEventListener('click', () => {
+    content.textContent = "Listening....";
+    recognition.start();
+});
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const recognition = new SpeechRecognition();
@@ -103,9 +121,7 @@ async function processCommand(message) {
     let finalText = '';
 
     // Check for AI-related commands
-    if (message.includes('gpt')) {
-        finalText = "Sure, what would you like to ask?";
-    } else if (message.includes('ask') && message.includes('gpt')) {
+    if (message.includes('ask gpt')) {
         const prompt = message.replace('ask gpt', '').trim();
         finalText = await askOpenAI(prompt);
     }
@@ -151,8 +167,8 @@ async function processCommand(message) {
         finalText = `Opening ${url}`;
     } else if (message.includes('search')) {
         const searchTerm = message.replace('search', '').trim();
-        window.open(`https://en.wikipedia.org/wiki/${searchTerm}`, "_blank");
-        finalText = `Searching for ${searchTerm} on Wikipedia`;
+        window.open(`https://www.google.com/search?q=${searchTerm}`, "_blank");
+        finalText = `Searching for ${searchTerm} on Google`;
     } else if (message.includes('my location')) {
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(async function(position) {
